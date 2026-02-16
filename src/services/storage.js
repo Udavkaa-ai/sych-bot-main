@@ -65,7 +65,7 @@ class StorageService {
   load() {
     try {
       this.data = JSON.parse(fs.readFileSync(DB_PATH, 'utf-8'));
-      // Если базы напоминаний нет — создаем пустую
+      // Если базы напоминаний нет - создаем пустую
       if (!this.data.bannedUsers) this.data.bannedUsers = {}; // { userId: "reason/name" }
     } catch (e) { 
       console.error("Ошибка чтения DB, сброс."); 
