@@ -132,7 +132,7 @@ class StorageService {
         // Превращаем время из базы тоже в ЧИСЛО
         const taskTime = new Date(r.time).getTime();
         
-        // Если время задачи меньше или равно текущему — пора слать!
+        // Если время задачи меньше или равно текущему - пора слать!
         return taskTime <= now;
     });
   }
@@ -310,7 +310,7 @@ class StorageService {
       };
 
       this.saveStats();
-      console.log("[STATS] Новый день — статистика архивирована и сброшена.");
+      console.log("[STATS] Новый день - статистика архивирована и сброшена.");
       return true;
     }
     return false;
@@ -424,7 +424,7 @@ class StorageService {
         // Дефолт: репутация 50
         return { realName: null, facts: "", attitude: "Нейтральное", relationship: 50 };
     }
-    // Если профиль есть, но поле relationship старое (нет его) — добавим 50
+    // Если профиль есть, но поле relationship старое (нет его) - добавим 50
     const p = this.profiles[chatId][userId];
     if (typeof p.relationship === 'undefined') p.relationship = 50;
     
@@ -606,7 +606,7 @@ class StorageService {
     console.log(`[CHAT PROFILE] Обновлен профиль чата ${chatId}: "${current.topic}"`);
   }
 
-  // Установить тему вручную (команда "Сыч, этот чат про...")
+  // Установить тему вручную (команда "Лиса, этот чат про...")
   setChatTopic(chatId, topic) {
     if (!this.chatProfiles[chatId]) {
       this.chatProfiles[chatId] = { topic: null, facts: null, style: null, lastUpdated: null };
