@@ -450,7 +450,7 @@ async analyzeChatProfile(messagesBatch, currentProfile) {
     return this.runLogicModel(prompts.analyzeChatProfile(currentProfile, messagesText));
 }
 
-// Обработка ручного описания чата (команда "Лиса, этот чат про...")
+// Обработка ручного описания чата (команда "Советник, этот чат про...")
 async processManualChatDescription(description, currentProfile) {
     return this.runLogicModel(prompts.processManualChatDescription(description, currentProfile));
 }
