@@ -27,7 +27,7 @@ const bot = new TelegramBot(config.telegramToken, { polling: true });
 const ai = require('./services/ai');
 ai.setBot(bot);
 
-console.log("Лисичка готова к приключениям.");
+console.log("Сова готова к приключениям.");
 console.log(`Admin ID: ${config.adminId}`);
 
 // === ТИКЕР НАПОМИНАЛОК (Проверка каждую минуту) ===
