@@ -59,6 +59,13 @@ setInterval(() => {
   }
 }, 60 * 1000); // 60000 мс = 1 минута
 
+// === ТИКЕР AUTO-REVIVE (Проверка каждые 5 минут) ===
+setInterval(() => {
+  logic.handleAutoRevive(bot).catch(err => {
+      console.error(`[AUTO-REVIVE TICKER ERROR] ${err.message}`);
+  });
+}, 5 * 60 * 1000); // 300000 мс = 5 минут
+
 // Обработка ошибок поллинга
 bot.on('polling_error', (error) => {
     console.error(`[POLLING ERROR] ${error.code}: ${error.message}`);

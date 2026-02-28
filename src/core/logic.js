@@ -362,6 +362,8 @@ async function processMessage(bot, msg) {
     if (userId !== config.adminId) return;
   } else {
     storage.trackUser(chatId, msg.from);
+    // Обновляем время последнего сообщения для auto-revive
+    storage.updateLastMessageTime(chatId);
   }
 
   // === НАБЛЮДАТЕЛЬ ===
@@ -475,6 +477,8 @@ async function processMessage(bot, msg) {
 • /mute — Режим тишины (перестану отвечать в этом чате).
 • /reset — Сброс памяти (если начал тупить или забыл контекст).
 • /version — Узнать текущую версию бота.
+• "Лиса, не скучай" — Буду поддерживать разговор, если тишина дольше 3 часов.
+• "Лиса, не болтай" — Перестану писать сама.
 
 _ver: ${config.version}_
         `;
@@ -568,6 +572,21 @@ _ver: ${config.version}_
                   try { return await bot.sendMessage(chatId, `Понял, запомнил. Тема: "${description.substring(0, 100)}..."`, getReplyOptions(msg)); } catch(e){}
               }
           }
+      }
+
+      // === AUTO-REVIVE КОМАНДЫ ===
+      if (cleanText.match(/(?:не скучай|болтай|общайся|не молчи)/)) {
+          if (msg.chat.type === 'private') {
+              try { return await bot.sendMessage(chatId, "Эта фича работает только в групповых чатах.", getReplyOptions(msg)); } catch(e){}
+          }
+          storage.setAutoRevive(chatId, true);
+          // Устанавливаем lastMessageTime чтобы таймер начался от текущего момента
+          storage.updateLastMessageTime(chatId);
+          try { return await bot.sendMessage(chatId, "Окей, буду поддерживать разговор, если тут станет тихо 😼", getReplyOptions(msg)); } catch(e){}
+      }
+      if (cleanText.match(/(?:не болтай|не оживляй|хватит болтать|перестань болтать)/)) {
+          storage.setAutoRevive(chatId, false);
+          try { return await bot.sendMessage(chatId, "Ладно, не буду лезть без дела.", getReplyOptions(msg)); } catch(e){}
       }
 
       const aboutMatch = cleanText.match(/(?:расскажи про|кто так(?:ой|ая)|мнение о|поясни за)\s+(.+)/);
@@ -895,4 +914,48 @@ _ver: ${config.version}_
   }
 }
 
-module.exports = { processMessage };
+// === AUTO-REVIVE: Проверка неактивных чатов и отправка сообщений ===
+async function handleAutoRevive(bot) {
+    const INACTIVITY_THRESHOLD = 3 * 60 * 60 * 1000; // 3 часа в мс
+
+    // Проверка ночного времени по Москве (0:00 - 8:00)
+    const moscowHour = parseInt(
+        new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow", hour: "2-digit", hour12: false }),
+        10
+    );
+    if (moscowHour >= 0 && moscowHour < 8) {
+        return; // Ночью не беспокоим
+    }
+
+    const inactiveChats = storage.getInactiveChats(INACTIVITY_THRESHOLD);
+    if (inactiveChats.length === 0) return;
+
+    console.log(`[AUTO-REVIVE] Найдено неактивных чатов: ${inactiveChats.length}`);
+
+    for (const chatId of inactiveChats) {
+        try {
+            const chatProfile = storage.getChatProfile(chatId);
+            const history = chatHistory[chatId] || [];
+
+            const message = await ai.generateAutoRevive(history, chatProfile);
+
+            if (message) {
+                await bot.sendMessage(chatId, message, { parse_mode: 'Markdown', disable_web_page_preview: true });
+                addToHistory(chatId, "Лиса", message);
+                console.log(`[AUTO-REVIVE] Отправлено в чат ${chatId}: "${message.substring(0, 50)}..."`);
+            }
+
+            // Обновляем время, чтобы не спамить повторно
+            storage.updateLastMessageTime(chatId);
+        } catch (e) {
+            console.error(`[AUTO-REVIVE ERROR] Чат ${chatId}: ${e.message}`);
+            // Если бота кикнули — отключаем auto-revive для этого чата
+            if (e.message.includes('chat not found') || e.message.includes('kicked') || e.message.includes('Forbidden') || e.message.includes('bot was blocked')) {
+                storage.setAutoRevive(chatId, false);
+                console.log(`[AUTO-REVIVE] Отключен для чата ${chatId} (бот удалён)`);
+            }
+        }
+    }
+}
+
+module.exports = { processMessage, handleAutoRevive };

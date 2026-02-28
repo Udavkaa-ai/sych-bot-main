@@ -473,6 +473,48 @@ async generateProfileDescription(profileData, targetName) {
     return "Не знаю такого.";
 }
 
+// === AUTO-REVIVE (Генерация сообщения для оживления чата) ===
+async generateAutoRevive(chatHistoryArr, chatProfile) {
+    const lastMessages = chatHistoryArr
+        ? chatHistoryArr.slice(-10).map(m => `${m.role}: ${m.text}`).join('\n')
+        : "";
+
+    const prompt = prompts.autoRevive({
+        time: this.getCurrentTime(),
+        chatContext: chatProfile,
+        lastMessages: lastMessages
+    });
+
+    if (this.openai) {
+        try {
+            const completion = await this.openai.chat.completions.create({
+                model: config.mainModel,
+                messages: [
+                    { role: "system", content: prompts.system() },
+                    { role: "user", content: prompt }
+                ],
+                max_tokens: 500,
+                temperature: 1.0,
+            });
+            storage.incrementStat('smart');
+            return completion.choices[0].message.content.replace(/^thought[\s\S]*?\n\n/i, '').trim();
+        } catch (e) {
+            console.error(`[AUTO-REVIVE AI ERROR] ${e.message}`);
+        }
+    }
+
+    // Fallback Native
+    try {
+        return await this.executeNativeWithRetry(async () => {
+            const result = await this.nativeModel.generateContent(prompt);
+            return result.response.text().trim();
+        });
+    } catch (e) {
+        console.error(`[AUTO-REVIVE NATIVE ERROR] ${e.message}`);
+        return null;
+    }
+}
+
 async generateFlavorText(task, result) {
   if (this.openai) {
       try {

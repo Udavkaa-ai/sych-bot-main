@@ -136,6 +136,26 @@ See `.env.example` for full configuration template.
 
 **Использование:** контекст чата передаётся в каждый запрос AI (~100 токенов).
 
+## Auto-Revive System (Chat Activity)
+
+Бот автоматически поддерживает разговор в чатах, где включена эта функция, если тишина длится более 3 часов.
+
+**Механизм:**
+- Тикер каждые 5 минут проверяет неактивные чаты через `storage.getInactiveChats()`
+- AI генерирует сообщение с учётом контекста чата (тема, факты, последние сообщения)
+- После отправки обновляется `lastMessageTime`, предотвращая повторные срабатывания
+
+**Управление:** per-chat, opt-in (выключено по умолчанию)
+- `Лиса, не скучай` / `Лиса, болтай` — включить
+- `Лиса, тихо` / `Лиса, не болтай` — выключить
+
+**Защиты:**
+- Не срабатывает ночью (0:00-8:00 по Москве)
+- Не срабатывает в замьюченных чатах
+- Автоотключение при кике бота из чата
+
+**Хранение:** поля `lastMessageTime` и `autoReviveEnabled` в структуре чата (`db.json`)
+
 ## Design Decisions
 
 - **Admin-only groups**: Bot auto-leaves groups where admin isn't a member
@@ -155,3 +175,5 @@ See `.env.example` for full configuration template.
 - `Сыч кто я?` - Show user profile
 - `Сыч стата` - Show token usage statistics
 - `Сыч, этот чат про [тема]` - Set chat topic manually
+- `Лиса, не скучай` - Enable auto-revive (chat activity after 3h silence)
+- `Лиса, не болтай` - Disable auto-revive

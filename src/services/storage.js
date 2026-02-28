@@ -559,6 +559,45 @@ class StorageService {
       return null;
     }
 
+  // === AUTO-REVIVE (Оживление чата) ===
+
+  updateLastMessageTime(chatId) {
+    const chat = this.getChat(chatId);
+    chat.lastMessageTime = Date.now();
+    this.save();
+  }
+
+  setAutoRevive(chatId, enabled) {
+    const chat = this.getChat(chatId);
+    chat.autoReviveEnabled = !!enabled;
+    this.save();
+  }
+
+  isAutoReviveEnabled(chatId) {
+    const chat = this.getChat(chatId);
+    return !!chat.autoReviveEnabled;
+  }
+
+  // Возвращает список chatId, где включён auto-revive и тишина дольше thresholdMs
+  getInactiveChats(thresholdMs) {
+    const now = Date.now();
+    const result = [];
+
+    for (const [chatId, chat] of Object.entries(this.data.chats)) {
+      if (!chat.autoReviveEnabled) continue;
+      if (!chat.lastMessageTime) continue;
+
+      // Проверяем что чат не замьючен целиком (general topic)
+      if (chat.mutedTopics && chat.mutedTopics.some(t => String(t) === 'general')) continue;
+
+      if (now - chat.lastMessageTime >= thresholdMs) {
+        result.push(chatId);
+      }
+    }
+
+    return result;
+  }
+
   // === ПРОФИЛИ ЧАТОВ ===
 
   // Получить профиль чата (или пустой объект)
