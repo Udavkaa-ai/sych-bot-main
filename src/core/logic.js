@@ -12,7 +12,7 @@ const CHAT_BUFFER_SIZE = 50; // Анализируем чат каждые 50 с
 // Храним 10 последних активных юзеров для удобного бана
 const recentActiveUsers = []; 
 
-// === ГЕНЕРАТОР ОТМАЗОК ЛИСЫ ===
+// === ГЕНЕРАТОР ОТМАЗОК КОТЁНКА ===
 function getSychErrorReply(errText) {
     const error = errText.toLowerCase();
 
@@ -277,10 +277,6 @@ async function processMessage(bot, msg) {
 **Почему так?**
 Бот работает на моих API-ключах Google, и я отвечаю за всё, что он генерирует. Поэтому он работает только там, где есть я (в чатах) или в моей личке.
 
-**Где меня потестить?**
-Залетай в комментарии к [этому посту](https://t.me/VETA14/13) или любому другому в канале, там я отвечаю всем.
-*(Просто напиши там «Лиса» или ответь реплаем на любое мое сообщение)*
-
 **Хочешь себе такого же бота?**
 Весь мой код открыт! Ты можешь скачать меня, вставить свои ключи и запустить на своем компе или сервере.
 [Скачать с GitHub](https://github.com/Veta-one/sych-bot)
@@ -460,25 +456,25 @@ async function processMessage(bot, msg) {
 • Кидай PDF, TXT или код — прочитаю и отвечу на вопросы.
 • Кидай ссылку на картинку (.jpg, .png, .webp) — скачаю и посмотрю.
 • Умею гуглить актуальную инфу (курсы, новости, погода).
-• «Лиса напомни завтра в 10» — поставлю напоминание. Можно реплаем на сообщение с датой.
+• «Котёнок напомни завтра в 10» — поставлю напоминание. Можно реплаем на сообщение с датой.
 
 **🎲 Развлекуха:**
-• "Лиса кинь монетку" — Орёл/Решка.
-• "Лиса число 1-100" — Рандомное число в диапазоне.
-• "Лиса кто из нас [вопрос]" — Выберу случайного из чата.
+• "Котёнок кинь монетку" — Орёл/Решка.
+• "Котёнок число 1-100" — Рандомное число в диапазоне.
+• "Котёнок кто из нас [вопрос]" — Выберу случайного из чата.
 
 **🕵️ Досье и Память:**
-• "Лиса кто я?" — Моё честное мнение о тебе.
-• "Лиса расскажи про @юзера" — Выдам досье на участника.
-• "Лиса стата" — Статистика токенов за сутки.
-• "Лиса, этот чат про [тема]" — Задать тему чата вручную.
+• "Котёнок кто я?" — Моё честное мнение о тебе.
+• "Котёнок расскажи про @юзера" — Выдам досье на участника.
+• "Котёнок стата" — Статистика токенов за сутки.
+• "Котёнок, этот чат про [тема]" — Задать тему чата вручную.
 
 **⚙️ Настройки:**
 • /mute — Режим тишины (перестану отвечать в этом чате).
 • /reset — Сброс памяти (если начал тупить или забыл контекст).
 • /version — Узнать текущую версию бота.
-• "Лиса, не скучай" — Буду поддерживать разговор, если тишина дольше 3 часов.
-• "Лиса, не болтай" — Перестану писать сама.
+• "Котёнок, не скучай" — Буду поддерживать разговор, если тишина дольше 3 часов.
+• "Котёнок, не болтай" — Перестану писать сама.
 
 _ver: ${config.version}_
         `;
@@ -518,7 +514,7 @@ _ver: ${config.version}_
   addToHistory(chatId, senderName, text);
 
   // === СТАТИСТИКА ===
-  if (cleanText === 'Лиса стата' || cleanText === 'Лиса статистика') {
+  if (cleanText === 'Котёнок стата' || cleanText === 'Котёнок статистика') {
     const report = ai.getStatsReport();
     return bot.sendMessage(chatId, report, getReplyOptions(msg));
   }
@@ -552,7 +548,7 @@ _ver: ${config.version}_
 
   // === ФИЧИ ===
   if (hasTriggerWord) {
-      // Команда "Лиса, этот чат про..." — используем оригинальный текст (не lowercase)
+      // Команда "Котёнок, этот чат про..." — используем оригинальный текст (не lowercase)
       const chatTopicMatch = text.match(/(?:этот чат про|чат про|мы тут|здесь мы)\s+([\s\S]+)/i);
       if (chatTopicMatch) {
           const description = chatTopicMatch[1].trim();
@@ -618,7 +614,7 @@ _ver: ${config.version}_
           try { return await bot.sendMessage(chatId, flavor, getReplyOptions(msg)); } catch(e){}
       }
       
-      const isWhoGame = cleanText.match(/(?:кто|кого)\s+(?:из нас|тут|здесь|в чате|сегодня)/) || cleanText.match(/Лиса\W+кто\??$/) || cleanText.trim() === "Лиса кто";
+      const isWhoGame = cleanText.match(/(?:кто|кого)\s+(?:из нас|тут|здесь|в чате|сегодня)/) || cleanText.match(/Котёнок\W+кто\??$/) || cleanText.trim() === "Котёнок кто";
       if (isWhoGame) {
           try { await bot.sendChatAction(chatId, 'typing', getActionOptions(threadId)); } catch(e){}
           const randomUser = storage.getRandomUser(chatId);
@@ -629,7 +625,7 @@ _ver: ${config.version}_
   }
 
   // === РЕШЕНИЕ ОБ ОТВЕТЕ ===
-  // Бот отвечает ТОЛЬКО когда его явно вызвали (тег "Лиса/Лисичка") или ответили на его сообщение
+  // Бот отвечает ТОЛЬКО когда его явно вызвали (тег "Котёнок/Гав") или ответили на его сообщение
   const shouldAnswer = isDirectlyCalled;
 
   // === ЛОГИКА РЕАКЦИЙ (15%) ===
@@ -874,7 +870,7 @@ _ver: ${config.version}_
 
         stopTyping(); // <-- Всё, сообщение ушло, выключаем статус
         
-        addToHistory(chatId, "Лиса", aiResponse);
+        addToHistory(chatId, "Котёнок", aiResponse);
 
     } catch (error) {
         stopTyping(); // <-- Если ошибка, ОБЯЗАТЕЛЬНО выключаем
@@ -890,7 +886,7 @@ _ver: ${config.version}_
              for (const chunk of rawChunks) {
                 await bot.sendMessage(chatId, chunk, { reply_to_message_id: msg.message_id });
              }
-             addToHistory(chatId, "Лиса", aiResponse);
+             addToHistory(chatId, "Котёнок", aiResponse);
         } catch (e2) { console.error("FATAL SEND ERROR (Даже аварийная не ушла):", e2.message); }
     }
 
@@ -941,7 +937,7 @@ async function handleAutoRevive(bot) {
 
             if (message) {
                 await bot.sendMessage(chatId, message, { parse_mode: 'Markdown', disable_web_page_preview: true });
-                addToHistory(chatId, "Лиса", message);
+                addToHistory(chatId, "Котёнок", message);
                 console.log(`[AUTO-REVIVE] Отправлено в чат ${chatId}: "${message.substring(0, 50)}..."`);
             }
 
