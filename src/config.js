@@ -26,11 +26,10 @@ module.exports = {
   // === АКТУАЛЬНЫЕ МОДЕЛИ (ЯНВАРЬ 2026) ===
   
   // 1. УМНАЯ (Ответы в чате)
-  mainModel: 'google/gemini-3-flash-preview', 
-  
+  mainModel: 'google/gemma-3-27b-it',
+
   // 2. ЛОГИКА (Анализ, реакции, проверки)
-  // Free версия недоступна, используем эффективную платную
-  logicModel: 'google/gemma-3-27b-it', 
+  logicModel: 'google/gemma-3-12b-it:free',
 
   // === ПОИСК (RAG или NATIVE) ===
   // Варианты: 

@@ -731,6 +731,14 @@ _ver: ${config.version}_
     const instruction = msg.from.username ? storage.getUserInstruction(msg.from.username) : "";
     const userProfile = storage.getProfile(chatId, userId);
 
+    // === КРИПТО-КОНТЕКСТ ===
+    const cryptoRegex = /биткоин|битком|биток|биткойн|\bbtc\b|\bbitcoin\b|эфир|эфириум|\beth\b|\bethereum\b|крипт[аоуеёи]|крипто|crypto|криптовалют|курс (крипт|биткоин|эфир)|рынок крипт|\bton\b|тонкоин|\bsolana\b|\bsol\b|\bdogecoin\b|\bdoge\b|доге|\bbnb\b|\bxrp\b|рипл|что (с|на) (рынке|крипт)|почем крипт/i;
+    let cryptoContext = null;
+    if (isDirectlyCalled && cryptoRegex.test(cleanText)) {
+        console.log(`[CRYPTO] Запрос о крипте, получаю курсы...`);
+        cryptoContext = await ai.getCryptoPrices();
+    }
+
     // === ЛОГИКА ССЫЛОК ===
     let targetLink = null;
     
@@ -773,7 +781,8 @@ _ver: ${config.version}_
         instruction,
         userProfile,
         !isDirectlyCalled,
-        chatProfile // <--- Передаём профиль чата
+        chatProfile,
+        cryptoContext
     );
 
     console.log(`[DEBUG] 2. Ответ от AI получен! Длина: ${aiResponse ? aiResponse.length : "PUSTO"}`);

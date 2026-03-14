@@ -156,9 +156,36 @@ class AiService {
     throw new Error("Все ключи Google Native исчерпаны!");
   }
 
+  async getCryptoPrices() {
+    const coins = 'bitcoin,ethereum,solana,toncoin,binancecoin,ripple,dogecoin,notcoin';
+    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coins}&vs_currencies=usd,rub&include_24hr_change=true`;
+    try {
+      const resp = await axios.get(url, { timeout: 7000 });
+      const data = resp.data;
+      const names = {
+        bitcoin: 'BTC', ethereum: 'ETH', solana: 'SOL',
+        toncoin: 'TON', binancecoin: 'BNB', ripple: 'XRP',
+        dogecoin: 'DOGE', notcoin: 'NOT'
+      };
+      const lines = Object.entries(names).map(([id, sym]) => {
+        if (!data[id]) return null;
+        const usd = data[id].usd?.toLocaleString('en-US') ?? '—';
+        const rub = data[id].rub ? Math.round(data[id].rub).toLocaleString('ru-RU') : '—';
+        const change = data[id].usd_24h_change;
+        const arrow = change > 0 ? '▲' : change < 0 ? '▼' : '—';
+        const pct = change != null ? `${arrow}${Math.abs(change).toFixed(1)}%` : '';
+        return `${sym}: $${usd} (₽${rub}) ${pct}`;
+      }).filter(Boolean);
+      return `Курсы крипты (CoinGecko, сейчас):\n${lines.join('\n')}`;
+    } catch (e) {
+      console.error(`[CRYPTO] Ошибка получения курсов: ${e.message}`);
+      return null;
+    }
+  }
+
   getCurrentTime() {
     const time = new Date().toLocaleString("ru-RU", {
-      timeZone: "Asia/Yekaterinburg",
+      timeZone: "Europe/Moscow",
       weekday: 'short', // Сократим до Пт, Пн (экономим токены)
       year: 'numeric',
       month: 'numeric',
@@ -167,7 +194,7 @@ class AiService {
       minute: '2-digit'
     });
     // Явно указываем базу для расчетов
-    return `${time} (UTC+5)`;
+    return `${time} (UTC+3)`;
   }
 
 // === УНИВЕРСАЛЬНЫЙ ПОИСК ===
@@ -221,7 +248,7 @@ async performSearch(query) {
 }
   
 // === ОСНОВНОЙ ОТВЕТ ===
-async getResponse(history, currentMessage, imageBuffer = null, mimeType = "image/jpeg", userInstruction = "", userProfile = null, isSpontaneous = false, chatProfile = null) {
+async getResponse(history, currentMessage, imageBuffer = null, mimeType = "image/jpeg", userInstruction = "", userProfile = null, isSpontaneous = false, chatProfile = null, cryptoContext = null) {
   this.resetStatsIfNeeded();
   console.log(`[DEBUG AI] getResponse вызван.`);
 
@@ -258,6 +285,10 @@ async getResponse(history, currentMessage, imageBuffer = null, mimeType = "image
   if (currentMessage.replyText) replyContext = `!!! ПОЛЬЗОВАТЕЛЬ ОТВЕТИЛ НА СООБЩЕНИЕ:\n"${currentMessage.replyText}"`;
   if (userInstruction) personalInfo += `\n!!! СПЕЦ-ИНСТРУКЦИЯ !!!\n${userInstruction}\n`;
   
+  if (cryptoContext) {
+      personalInfo += `\n!!! АКТУАЛЬНЫЕ ДАННЫЕ КРИПТОРЫНКА !!!\n${cryptoContext}\nИНСТРУКЦИЯ: Используй эти точные данные в ответе. Данные свежие, только что получены.\n`;
+  }
+
   if (searchResultText) {
       personalInfo += `\n!!! ДАННЫЕ ИЗ ПОИСКА (${config.searchProvider.toUpperCase()}) !!!\n${searchResultText}\nИНСТРУКЦИЯ: Ответь, используя эти факты. УКАЖИ ССЫЛКИ.\n`;
   }
