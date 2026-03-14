@@ -253,8 +253,9 @@ async getResponse(history, currentMessage, imageBuffer = null, mimeType = "image
   console.log(`[DEBUG AI] getResponse вызван.`);
 
   // 1. AI ОПРЕДЕЛЯЕТ НУЖЕН ЛИ ПОИСК
+  // Если уже есть свежие данные рынка — поиск не нужен, блокируем
   const recentHistory = history.slice(-5).map(m => `${m.role}: ${m.text}`).join('\n');
-  const searchDecision = await this.checkSearchNeeded(
+  const searchDecision = cryptoContext ? { needsSearch: false } : await this.checkSearchNeeded(
       currentMessage.text,
       recentHistory,
       chatProfile?.topic || null
@@ -286,7 +287,7 @@ async getResponse(history, currentMessage, imageBuffer = null, mimeType = "image
   if (userInstruction) personalInfo += `\n!!! СПЕЦ-ИНСТРУКЦИЯ !!!\n${userInstruction}\n`;
   
   if (cryptoContext) {
-      personalInfo += `\n!!! АКТУАЛЬНЫЕ ДАННЫЕ КРИПТОРЫНКА !!!\n${cryptoContext}\nИНСТРУКЦИЯ: Используй эти точные данные в ответе. Данные свежие, только что получены.\n`;
+      personalInfo += `\n!!! АКТУАЛЬНЫЕ ДАННЫЕ РЫНКА !!!\n${cryptoContext}\nИНСТРУКЦИЯ: Назови только текущий курс из этих данных. НЕ ДАВАЙ прогнозов, аналитики, советов по покупке/продаже и мнений о будущем цены. Только факт: что сейчас стоит.\n`;
   }
 
   if (searchResultText) {
